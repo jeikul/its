@@ -62,7 +62,7 @@
   				  $query .= "0" ;
 				} else if ( $liType == MYSQLI_TYPE_VAR_STRING && $varSize == 77 ) {
 				  $query .= "'" . crypt(trim($_POST[$row["fdName"]]), md5(trim($_POST[$row["fdName"]]))) . "'" ;
-				} else if ( $liType == MYSQLI_TYPE_VAR_STRING || $liType == MYSQLI_TYPE_BLOB ) {
+				} else if ( $liType == MYSQLI_TYPE_VAR_STRING || $liType == MYSQLI_TYPE_BLOB || $liType == MYSQLI_TYPE_DATE ) {
 				  $query .= "'" . addslashes (trim($_POST[$row["fdName"]])) . "'" ;
 				} else if ( $liType == MYSQLI_TYPE_TIME )
 				  $query .= "'" . $_POST[$row["fdName"]] . "'" ;
@@ -151,7 +151,7 @@
 			$varSize = $objField->length ;
 		  if ( $i ++ > 0 )
 			  $query .= "," ;
-			if ( $liType == MYSQLI_TYPE_FLOAT || $liType == MYSQLI_TYPE_SHORT || $liType == MYSQLI_TYPE_LONG && $varSize == 11 ) {
+			if ( $liType == MYSQLI_TYPE_NEWDECIMAL || $liType == MYSQLI_TYPE_FLOAT || $liType == MYSQLI_TYPE_SHORT || $liType == MYSQLI_TYPE_LONG && $varSize == 11 ) {
 			  $query .= $row["fdName"] . "=" ;
 				if ( $_POST[$row["fdName"]] == "" )
 					$query .= "0" ;
@@ -185,6 +185,7 @@
 <head>
   <title><?php print $strAction . $strTableDescription; ?></title>
 </head>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <body>
   <table width=100% cellspacing=0><tr bgcolor=#88FAFA>
 	  <td><?php print $strAction . $strTableDescription; ?></td>
@@ -267,6 +268,26 @@
 					  $varInitValue = -1 ;
 				  fnLog ( "varInitValue=$varInitValue" ) ;
 					fnFilllist ( $query, $varInitValue, 0, 1 ) ;
+					print "<input type=text name=txt_" . $row["fdName"] . " onchange='fnFilter_" . $row["fdName"] . "()'>\r\n" ;
+					print "<script>function fnFilter_" . $row["fdName"] . "() {\r\n" ;
+					?>
+					  str = "abc" ;
+					  $.ajax({
+						  url:"get_id_by_name.php",
+							dataType: "TEXT",
+							type: "get",
+							data: {
+							  table: "tbFood",
+							  name: document.forms["fmControl"]["txt_<?php print $row["fdName"];?>"].value
+							},
+							success: function (data) {
+					      document.forms["fmControl"]["<?php print $row["fdName"];?>"].value = data ;
+							},
+							error: function() {
+							}
+						}) ;
+					<?php
+					print "}</script>\r\n" ;
 				} else
 				  print "Not handled type:$liType($varSize)" ;
 				print "</td></tr>\r\n" ;
